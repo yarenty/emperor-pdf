@@ -6,7 +6,7 @@ use std::path::Path;
 use emperor_mcp::doctor::{Check, Report, port_free, tool_budget};
 
 use crate::root::Root;
-use crate::{pdfium, tool_count, world};
+use crate::{pdfium, tool_count};
 
 /// What `doctor` checks.
 pub struct DoctorOptions<'a> {
@@ -33,8 +33,25 @@ pub fn run(opts: &DoctorOptions<'_>) -> Report {
             ),
         ),
     });
+    #[cfg(feature = "create")]
+    report.push(fonts_check());
+    match opts.bind {
+        Some(addr) => {
+            report.push(port_free(addr));
+        }
+        None => {
+            report.push(Check::pass("listen address", "stdio, no port needed"));
+        }
+    }
+    report.push(tool_budget(tool_count(opts.writable)));
+    report
+}
+
+#[cfg(feature = "create")]
+fn fonts_check() -> Check {
+    use crate::world;
     let fonts = world::font_count();
-    report.push(if fonts > 0 {
+    if fonts > 0 {
         Check::pass(
             "typst fonts",
             format!(
@@ -47,17 +64,7 @@ pub fn run(opts: &DoctorOptions<'_>) -> Report {
             "typst fonts",
             "no embedded fonts; pdf_create cannot typeset",
         )
-    });
-    match opts.bind {
-        Some(addr) => {
-            report.push(port_free(addr));
-        }
-        None => {
-            report.push(Check::pass("listen address", "stdio, no port needed"));
-        }
     }
-    report.push(tool_budget(tool_count()));
-    report
 }
 
 fn root_check(path: &Path, writable: bool) -> Check {

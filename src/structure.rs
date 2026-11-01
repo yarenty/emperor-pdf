@@ -21,8 +21,6 @@ pub fn load(bytes: &[u8]) -> Result<Document> {
 /// What `pdf_info` reports.
 #[derive(Debug, Serialize)]
 pub struct Info {
-    /// Root-relative path.
-    pub path: String,
     /// File size in bytes.
     pub size_bytes: u64,
     /// Number of pages.
@@ -50,7 +48,7 @@ pub struct Info {
 }
 
 /// Read the metadata of a loaded document.
-pub fn info(doc: &Document, path: &str, size_bytes: u64) -> Info {
+pub fn info(doc: &Document, size_bytes: u64) -> Info {
     let dict = doc
         .trailer
         .get(b"Info")
@@ -66,7 +64,6 @@ pub fn info(doc: &Document, path: &str, size_bytes: u64) -> Info {
             .filter(|s| !s.is_empty())
     };
     Info {
-        path: path.to_string(),
         size_bytes,
         pages: doc.get_pages().len() as u32,
         pdf_version: doc.version.clone(),

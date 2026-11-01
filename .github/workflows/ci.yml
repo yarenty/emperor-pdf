@@ -23,6 +23,30 @@ jobs:
       - name: doctor
         run: cargo run --quiet -- doctor --root . --pdfium-dir pdfium --stdio
 
+  # The read-only build: no Typst, no pdf_create.
+  no-create:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --all-targets --no-default-features -- -D warnings
+      - run: cargo build --release --no-default-features
+      - run: cargo test --no-default-features
+      - name: binary size
+        run: ls -l target/release/emperor-pdf
+
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.92
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check --all-targets
+      - run: cargo check --all-targets --no-default-features
+
   deny:
     runs-on: ubuntu-latest
     steps:

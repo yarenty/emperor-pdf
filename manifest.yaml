@@ -2,25 +2,25 @@ name: emperor-pdf
 type: server
 about:
   title: PDF
-  description: Read, search, render, merge, extract and create PDFs inside one root folder, never outside it.
+  description: Read, search and render PDFs from one root folder, base64 data or an https URL, with hidden-text warnings; merge, extract and create PDFs inside the folder when writable.
 meta:
   category: documents
-  tags: [pdf, documents, search, render, typst, pdfium, sandbox]
+  tags: [pdf, documents, search, render, typst, pdfium, sandbox, prompt-injection]
 endpoint: http://127.0.0.1:8032/mcp
 topology: local-config
 tools:
   - name: pdf_info
-    description: Page count, title, author, dates, PDF version, encryption and size of a PDF.
+    description: Page count, title, author, dates, PDF version, encryption and size of a PDF (path, base64 data or https url).
   - name: pdf_text
-    description: Text of a PDF page by page, with an optional page range and character limit; PDFium when installed, lopdf otherwise.
+    description: Text of a PDF page by page (path, base64 data or https url), with an optional page range and character limit, and a warning about hidden text; PDFium when installed, lopdf otherwise.
   - name: pdf_search
-    description: Search one PDF or a glob of PDFs for text or a regular expression; file, page and snippet per hit.
+    description: Search one PDF, a glob of PDFs, base64 data or an https url for text or a regular expression; file, page and snippet per hit, pages with hidden text flagged.
   - name: pdf_render_page
-    description: Render one page to PNG (up to 300 dpi) returned as an image, optionally saved. Needs PDFium; saving needs --writable.
+    description: Render one page to PNG (up to 300 dpi) returned as an image, e.g. to read a scanned page; optionally saved. Needs PDFium; saving needs --writable.
   - name: pdf_pages
-    description: Merge PDFs or extract pages into a new PDF, with page ranges; refuses to overwrite unless asked. Needs --writable.
+    description: Merge PDFs or extract pages into a new PDF, with page ranges; refuses to overwrite unless asked. Listed only with --writable.
   - name: pdf_create
-    description: Create a PDF from Markdown, typeset with Typst and embedded fonts; refuses to overwrite unless asked. Needs --writable.
+    description: Create a PDF from Markdown, typeset with Typst and embedded OFL fonts; refuses to overwrite unless asked. Listed only with --writable (and the create feature).
 config:
   parameters:
     type: object
@@ -36,7 +36,7 @@ config:
         default: false
         ui:
           label: Allow writes
-          hint: Enables pdf_pages, pdf_create and saving rendered pages (--writable).
+          hint: Offers pdf_pages and pdf_create and allows saving rendered pages (--writable).
       pdfium_dir:
         type: string
         ui:
