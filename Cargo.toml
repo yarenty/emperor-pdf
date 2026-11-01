@@ -14,8 +14,7 @@ keywords = ["mcp", "mcp-server", "pdf", "typst", "pdfium"]
 categories = ["command-line-utilities", "text-processing"]
 
 [dependencies]
-# switch to version = "0.2" once published
-emperor-mcp = { git = "https://github.com/yarenty/emperor-mcp", branch = "chore/rmcp-3" }
+emperor-mcp = "0.2"
 rmcp = { version = "3.8", features = ["server", "macros", "transport-io"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }

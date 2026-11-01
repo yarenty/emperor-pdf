@@ -48,5 +48,3 @@ wildcards = "allow"
 unknown-registry = "deny"
 unknown-git = "deny"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
-# emperor-mcp 0.2 is not on crates.io yet; drop this once Cargo.toml uses version = "0.2".
-allow-git = ["https://github.com/yarenty/emperor-mcp"]
