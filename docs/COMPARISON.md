@@ -1,6 +1,6 @@
 # emperor-pdf next to other PDF MCP servers
 
-How emperor-pdf 0.1.2 compares with the most popular public MCP servers that work with PDFs. For
+How emperor-pdf 0.1.3 compares with the most popular public MCP servers that work with PDFs. For
 the shared background (the 2026-07-28 spec revision, annotations, the "lethal trifecta") and what
 every emperor server gets from the framework, see
 [the emperor-mcp comparison](https://github.com/yarenty/emperor-mcp/blob/main/docs/COMPARISON.md).
@@ -21,7 +21,7 @@ overwrite them.
 
 | Server | Stars | Last release | Language | Tools | Read | Search | Render | Merge / extract | Create | OCR | Hidden text |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| **emperor-pdf** | new | 0.1.2, 2026-11-01 | Rust | 6 (4 when read-only) | ✓ path, base64 or `https://` URL | ✓ text or regex, over globs | ✓ PDFium | ✓ | ✓ Markdown → Typst | – (render for a vision model) | ✓ flagged |
+| **emperor-pdf** | new | 0.1.3, 2026-11-01 | Rust | 6 (4 when read-only) | ✓ path, base64 or `https://` URL | ✓ text or regex, over globs | ✓ PDFium | ✓ | ✓ Markdown → Typst | – (render for a vision model) | ✓ flagged |
 | [SylphxAI/anymd](https://github.com/SylphxAI/anymd) | 1.06k | v8.5.7, 2026-10-30 | Rust (npm wrapper) | 4 (`inspect` has several operations) | ✓ PDF, Office, EPUB, HTML, media | ✓ | ✓ | – | – | ✓ tesseract or local doc-VLM | (?) |
 | [jztan/pdf-mcp](https://github.com/jztan/pdf-mcp) | 165 | v3.6.0, 2026-10-31 | Python | 13 | ✓ | ✓ hybrid keyword + semantic, over folders | ✓ | – | – | ✓ tesseract | ✓ flagged |
 | [hanweg/mcp-pdf-tools](https://github.com/hanweg/mcp-pdf-tools) | 76 | no releases (last commit 2026-10-22) | Python | 5 | – | ✓ regex, "find related" | – | ✓ | – | – | – |

@@ -5,8 +5,8 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use anyhow::Context;
-use clap::builder::FalseyValueParser;
 use clap::{ArgAction, Args, Parser, Subcommand};
+use emperor_mcp::cli::parse_switch;
 use emperor_mcp::{ServeOptions, serve};
 use emperor_pdf::doctor::{self, DoctorOptions};
 use emperor_pdf::root::Root;
@@ -43,8 +43,9 @@ struct Common {
     bind: SocketAddr,
     /// Allow pdf_pages, pdf_create and saving rendered pages to write files in the root (without
     /// it, pdf_pages and pdf_create are not offered at all). Also read from $PDF_WRITABLE:
-    /// unset, empty, `false`, `0` or `no` mean off.
-    #[arg(long, env = "PDF_WRITABLE", action = ArgAction::SetTrue, value_parser = FalseyValueParser::new())]
+    /// `true`, `1`, `yes`, `on` turn it on; unset, empty, `false`, `0`, `no`, `off` leave it off;
+    /// any other value is refused at start-up.
+    #[arg(long, env = "PDF_WRITABLE", action = ArgAction::SetTrue, value_parser = parse_switch)]
     writable: bool,
     /// Folder holding the PDFium library (also searched: $PDFIUM_DYNAMIC_LIB_PATH, the binary's
     /// folder, the system library path).
@@ -137,28 +138,23 @@ mod tests {
             .clone()
     }
 
-    // The parser `writable` uses; the env wiring itself is covered by tests/cli.rs.
-    fn parse(value: &str) -> bool {
-        use clap::builder::TypedValueParser;
-        let cmd = Cli::command();
-        FalseyValueParser::new()
-            .parse_ref(&cmd, None, std::ffi::OsStr::new(value))
-            .unwrap()
-    }
-
     #[test]
     fn writable_reads_pdf_writable() {
         let arg = writable_arg();
         assert_eq!(arg.get_env(), Some(std::ffi::OsStr::new("PDF_WRITABLE")));
     }
 
+    // The parser `--writable` and $PDF_WRITABLE share; the env wiring is covered by tests/cli.rs.
     #[test]
     fn pdf_writable_values() {
         for off in ["", "false", "False", "0", "no", "off"] {
-            assert!(!parse(off), "{off:?} must mean off");
+            assert_eq!(parse_switch(off), Ok(false), "{off:?} must mean off");
         }
-        for on in ["true", "TRUE", "1", "yes"] {
-            assert!(parse(on), "{on:?} must mean on");
+        for on in ["true", "TRUE", "1", "yes", "on"] {
+            assert_eq!(parse_switch(on), Ok(true), "{on:?} must mean on");
+        }
+        for bad in ["maybe", "2", "enabled"] {
+            assert!(parse_switch(bad).is_err(), "{bad:?} must be refused");
         }
     }
 
