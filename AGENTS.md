@@ -1,6 +1,6 @@
 # emperor-pdf — AI agent notes
 
-**Crate**: `emperor-pdf` · **Version**: 0.1.0 (on emperor-mcp 0.3 from crates.io) · **Licence**: MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`) · **Rust**: 1.92 (`rust-version`; typst 0.15 sets the floor)
+**Crate**: `emperor-pdf` · **Version**: 0.1.1 (on emperor-mcp 0.3 from crates.io) · **Licence**: MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`) · **Rust**: 1.92 (`rust-version`; typst 0.15 sets the floor)
 
 ## Scope
 

@@ -1,0 +1,61 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.yarenty/emperor-pdf",
+  "title": "emperor-pdf",
+  "description": "Read, search and render the PDFs in one folder; merge, extract and create them from Markdown.",
+  "version": "0.1.1",
+  "repository": {
+    "url": "https://github.com/yarenty/emperor-pdf",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/yarenty/emperor-pdf",
+  "packages": [
+    {
+      "registryType": "cargo",
+      "identifier": "emperor-pdf",
+      "version": "0.1.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "serve",
+          "valueHint": "command",
+          "description": "Run the MCP server.",
+          "isRequired": true
+        },
+        {
+          "type": "positional",
+          "value": "--stdio",
+          "valueHint": "stdio",
+          "description": "Speak MCP over stdin/stdout.",
+          "isRequired": true
+        },
+        {
+          "type": "named",
+          "name": "--root",
+          "valueHint": "root_dir",
+          "description": "The only folder the server can see; tool paths are relative to it.",
+          "format": "filepath",
+          "isRequired": true
+        },
+        {
+          "type": "named",
+          "name": "--pdfium-dir",
+          "valueHint": "pdfium_dir",
+          "description": "Folder holding the PDFium library (scripts/fetch-pdfium.sh); without it text falls back to lopdf and rendering is off.",
+          "format": "filepath",
+          "isRequired": false
+        },
+        {
+          "type": "positional",
+          "value": "--writable",
+          "valueHint": "writable",
+          "description": "Offer pdf_pages and pdf_create and allow saving rendered pages inside the root folder.",
+          "isRequired": false
+        }
+      ]
+    }
+  ]
+}

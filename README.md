@@ -51,6 +51,20 @@ cargo install --git https://github.com/yarenty/emperor-pdf --no-default-features
 | default (`create`) | 51 MB |
 | `--no-default-features` | 14 MB |
 
+### Docker
+
+The repository's `Dockerfile` builds an image that speaks MCP over stdio and carries PDFium
+(linux/amd64 and linux/arm64). Mount the folder with your PDFs at `/data`:
+
+```bash
+docker build -t emperor-pdf .
+docker run -i --rm -v ~/Documents/papers:/data:ro emperor-pdf
+# read-write: mount without :ro and pass the arguments yourself
+docker run -i --rm -v ~/Documents/papers:/data emperor-pdf --root /data --writable
+```
+
+The server runs as uid 10001, so for `--writable` the mounted folder must be writable by it.
+
 ### PDFium (recommended)
 
 PDFium is a native library loaded at runtime; it is **not** bundled with emperor-pdf. Prebuilt
@@ -227,7 +241,7 @@ emperor-pdf doctor --root ~/Documents/papers --pdfium-dir ./pdfium --writable
 ```
 
 ```
-emperor-pdf 0.1.0 doctor
+emperor-pdf 0.1.1 doctor
   [ok  ] root folder     /Users/me/Documents/papers (writable)
   [ok  ] pdfium          loaded from ./pdfium/lib/libpdfium.dylib
   [ok  ] typst fonts     6 embedded faces (DejaVu Sans Mono, Libertinus Serif)
@@ -255,6 +269,12 @@ The tests build their fixture PDFs with Typst in a temporary folder and talk to 
 over HTTP (and one over stdio); `url` sources are fetched from a small local HTTP server. The
 tool lists are checked with emperor-mcp's `testkit`. Without `./pdfium` the PDFium-only tests
 print a note and pass.
+
+## Links
+
+- crates.io: [emperor-pdf](https://crates.io/crates/emperor-pdf)
+- Official MCP Registry: mcp-name: io.github.yarenty/emperor-pdf
+- Framework: [emperor-mcp](https://github.com/yarenty/emperor-mcp)
 
 ## Licence
 
