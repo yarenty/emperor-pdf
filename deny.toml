@@ -34,9 +34,12 @@ allow = [
   "ISC",
   "Unicode-3.0",
   "Zlib",
-  # typst-assets declares Apache-2.0 for the crate; the embedded fonts themselves are under the
-  # SIL Open Font License and similar, with their licence texts shipped inside typst-assets.
+  # Data crates in the typst tree. The fonts emperor-pdf embeds are in assets/fonts with their
+  # own licence texts (SIL OFL 1.1, Bitstream Vera).
   "CC0-1.0",
+  # webpki-root-certs (Mozilla's root certificates as data) via rustls-platform-verifier, for
+  # `url` sources.
+  "CDLA-Permissive-2.0",
 ]
 confidence-threshold = 0.8
 

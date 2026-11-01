@@ -9,6 +9,7 @@ use clap::{Args, Parser, Subcommand};
 use emperor_mcp::{ServeOptions, serve};
 use emperor_pdf::doctor::{self, DoctorOptions};
 use emperor_pdf::root::Root;
+use emperor_pdf::source::{FetchPolicy, Fetcher};
 use emperor_pdf::{Config, PdfServer, pdfium};
 use rmcp::ServiceExt;
 
@@ -39,7 +40,8 @@ struct Common {
     /// Address for Streamable HTTP.
     #[arg(long, default_value = "127.0.0.1:8032")]
     bind: SocketAddr,
-    /// Allow pdf_pages, pdf_create and saving rendered pages to write files in the root.
+    /// Allow pdf_pages, pdf_create and saving rendered pages to write files in the root (without
+    /// it, pdf_pages and pdf_create are not offered at all).
     #[arg(long)]
     writable: bool,
     /// Folder holding the PDFium library (also searched: $PDFIUM_DYNAMIC_LIB_PATH, the binary's
@@ -87,6 +89,7 @@ async fn run(c: Common) -> anyhow::Result<()> {
         root,
         writable: c.writable,
         pdfium,
+        fetcher: Fetcher::new(FetchPolicy::default())?,
     });
     if c.stdio {
         let service = PdfServer::new(config)

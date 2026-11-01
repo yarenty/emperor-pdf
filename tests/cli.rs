@@ -20,10 +20,19 @@ fn doctor_passes_on_a_good_root() {
     assert!(out.status.success(), "{text}");
     assert!(text.contains("(writable)"), "{text}");
     assert!(
-        text.contains("tool budget") && text.contains("6 of at most 8"),
+        text.contains("tool budget")
+            && text.contains(if cfg!(feature = "create") {
+                "6 of at most 8"
+            } else {
+                "5 of at most 8"
+            }),
         "{text}"
     );
-    assert!(text.contains("typst fonts"), "{text}");
+    assert_eq!(
+        text.contains("typst fonts"),
+        cfg!(feature = "create"),
+        "{text}"
+    );
     // PDFium missing is a warning, not a failure.
     assert!(text.contains("pdfium"), "{text}");
 }
@@ -55,7 +64,7 @@ fn doctor_fails_on_a_busy_port() {
 }
 
 #[test]
-fn serve_over_stdio_lists_six_tools() {
+fn serve_over_stdio_read_only_lists_four_tools() {
     use std::io::{BufRead, BufReader, Write};
     use std::process::Stdio;
 
@@ -90,7 +99,7 @@ fn serve_over_stdio_lists_six_tools() {
     let list: serde_json::Value = serde_json::from_str(&line).unwrap();
     assert_eq!(
         list["result"]["tools"].as_array().unwrap().len(),
-        6,
+        4,
         "{line}"
     );
     child.kill().unwrap();

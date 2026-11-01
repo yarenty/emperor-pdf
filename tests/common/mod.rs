@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use emperor_mcp::{ServeOptions, serve};
 use emperor_pdf::root::Root;
+use emperor_pdf::source::{FetchPolicy, Fetcher};
 use emperor_pdf::{Config, PdfServer, create, pdfium};
 use serde_json::{Value, json};
 
@@ -70,8 +71,21 @@ pub enum Engine {
     LopdfOnly,
 }
 
+/// The fetch policy of test servers: plain HTTP to the local test file server is allowed.
+pub fn local_fetch() -> FetchPolicy {
+    FetchPolicy {
+        allow_local_http: true,
+        ..FetchPolicy::default()
+    }
+}
+
 /// Start a server on a free port; returns its base URL.
 pub async fn start(root: &Path, writable: bool, engine: Engine) -> String {
+    start_with(root, writable, engine, local_fetch()).await
+}
+
+/// [`start`] with a given fetch policy.
+pub async fn start_with(root: &Path, writable: bool, engine: Engine, fetch: FetchPolicy) -> String {
     let config = Arc::new(Config {
         root: Root::open(root).unwrap(),
         writable,
@@ -79,6 +93,7 @@ pub async fn start(root: &Path, writable: bool, engine: Engine) -> String {
             Engine::Pdfium => pdfium(),
             Engine::LopdfOnly => None,
         },
+        fetcher: Fetcher::new(fetch).unwrap(),
     });
     let port = std::net::TcpListener::bind("127.0.0.1:0")
         .unwrap()
@@ -161,4 +176,50 @@ pub async fn call(base: &str, tool: &str, args: Value) -> Call {
 /// Page count of a PDF on disk, read with lopdf.
 pub fn page_count(path: &Path) -> usize {
     lopdf::Document::load(path).unwrap().get_pages().len()
+}
+
+/// A minimal HTTP/1.1 file server on a free local port, for `url` sources. Routes: `/<name>`
+/// serves `files[name]` as `application/pdf`; `/redirect/<name>` answers 302 to `/<name>`;
+/// anything else is 404. Returns the base URL.
+pub async fn file_server(files: Vec<(&'static str, Vec<u8>)>) -> String {
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let files = Arc::new(files);
+    tokio::spawn(async move {
+        loop {
+            let Ok((mut sock, _)) = listener.accept().await else {
+                return;
+            };
+            let files = files.clone();
+            tokio::spawn(async move {
+                let mut req = Vec::new();
+                let mut buf = [0u8; 1024];
+                while !req.windows(4).any(|w| w == b"\r\n\r\n") {
+                    match sock.read(&mut buf).await {
+                        Ok(0) | Err(_) => return,
+                        Ok(n) => req.extend_from_slice(&buf[..n]),
+                    }
+                }
+                let head = String::from_utf8_lossy(&req);
+                let path = head.split_whitespace().nth(1).unwrap_or("/").to_string();
+                let (status, extra, body) = if let Some(name) = path.strip_prefix("/redirect/") {
+                    ("302 Found", format!("Location: /{name}\r\n"), Vec::new())
+                } else {
+                    match files.iter().find(|(n, _)| path == format!("/{n}")) {
+                        Some((_, b)) => ("200 OK", String::new(), b.clone()),
+                        None => ("404 Not Found", String::new(), b"missing".to_vec()),
+                    }
+                };
+                let header = format!(
+                    "HTTP/1.1 {status}\r\nContent-Type: application/pdf\r\nContent-Length: {}\r\n{extra}Connection: close\r\n\r\n",
+                    body.len()
+                );
+                let _ = sock.write_all(header.as_bytes()).await;
+                let _ = sock.write_all(&body).await;
+                let _ = sock.shutdown().await;
+            });
+        }
+    });
+    format!("http://{addr}")
 }

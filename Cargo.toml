@@ -13,8 +13,14 @@ readme = "README.md"
 keywords = ["mcp", "mcp-server", "pdf", "typst", "pdfium"]
 categories = ["command-line-utilities", "text-processing"]
 
+[features]
+default = ["create"]
+# pdf_create (Markdown to PDF with Typst and embedded fonts). Without it the binary is
+# read-and-render only and much smaller.
+create = ["dep:typst", "dep:typst-pdf", "dep:typst-layout", "dep:pulldown-cmark"]
+
 [dependencies]
-emperor-mcp = "0.2"
+emperor-mcp = "0.3"
 rmcp = { version = "3.8", features = ["server", "macros", "transport-io"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
@@ -29,18 +35,26 @@ cap-std = "4.0"
 pdfium-render = { version = "0.9", default-features = false, features = ["pdfium_latest", "thread_safe"] }
 png = "0.18"
 lopdf = "0.46"
-typst = "0.15"
-typst-pdf = "0.15"
-typst-layout = "0.15"
-typst-assets = { version = "0.15", features = ["fonts"] }
-pulldown-cmark = { version = "0.13", default-features = false }
+typst = { version = "0.15", optional = true }
+typst-pdf = { version = "0.15", optional = true }
+typst-layout = { version = "0.15", optional = true }
+pulldown-cmark = { version = "0.13", default-features = false, optional = true }
 glob = "0.3"
 regex = "1"
 base64 = "0.22"
+# `url` sources: HTTPS with rustls (ring) and the operating system's trust store.
+reqwest = { version = "0.13", default-features = false, features = ["rustls-no-provider"] }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 
 [dev-dependencies]
-reqwest = { version = "0.13", features = ["json"] }
+emperor-mcp = { version = "0.3", features = ["testkit"] }
+reqwest = { version = "0.13", default-features = false, features = ["json"] }
 tempfile = "3"
+
+[[test]]
+name = "tools"
+# The fixtures are typeset with Typst.
+required-features = ["create"]
 
 [profile.release]
 lto = "thin"
