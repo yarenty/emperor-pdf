@@ -275,6 +275,7 @@ print a note and pass.
 - crates.io: [emperor-pdf](https://crates.io/crates/emperor-pdf)
 - Official MCP Registry: mcp-name: io.github.yarenty/emperor-pdf
 - Framework: [emperor-mcp](https://github.com/yarenty/emperor-mcp)
+- How it compares with other PDF MCP servers: [docs/COMPARISON.md](docs/COMPARISON.md)
 
 ## Licence
 
