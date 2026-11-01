@@ -1,0 +1,8 @@
+/target
+/pdfium
+/.git
+/.github
+/.idea
+.DS_Store
+*.md
+!README.md

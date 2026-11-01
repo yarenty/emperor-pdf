@@ -4,6 +4,12 @@ All notable changes to emperor-pdf. The format follows [Keep a Changelog](https:
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-01
+
+### Added
+- **Docker image** - a `Dockerfile` for linux/amd64 and linux/arm64 that serves over stdio with a pinned, checksum-verified PDFium in `/opt/pdfium`, runs as a non-root user and reads the PDFs mounted at `/data`.
+- **MCP Registry entry** - `server.json` describes the crates.io package (`serve --stdio`, `--root`, `--pdfium-dir`, `--writable`), and the README carries the registry name `io.github.yarenty/emperor-pdf`.
+
 ## [0.1.0] - 2026-11-01
 
 > First release: the PDFs in one folder, for agents.
