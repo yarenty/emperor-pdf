@@ -4,6 +4,15 @@ All notable changes to emperor-pdf. The format follows [Keep a Changelog](https:
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-01
+
+### Added
+- **`PDF_WRITABLE`** - the environment variable switches `--writable` on (`true`, `1`, `yes`) or leaves it off (unset, empty, `false`, `0`, `no`), so container catalogs that only set variables can offer the writing tools; `server.json` lists it. The startup log says whether writing is on.
+- **Docker CI** - the image is built natively on linux/amd64 and linux/arm64 and answers a stdio session on each: the read-only tool list, `pdf_text` through PDFium, and the writing tools with `PDF_WRITABLE=true`.
+
+### Changed
+- **Docker** - the read-write example uses `-e PDF_WRITABLE=true` instead of repeating the arguments.
+
 ## [0.1.1] - 2026-11-01
 
 ### Added

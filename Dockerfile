@@ -4,8 +4,8 @@
 #   docker build -t emperor-pdf .
 #   docker run -i --rm -v "$PWD/papers:/data:ro" emperor-pdf
 #
-# The PDFs go in /data (the root folder). Add `--root /data --writable` after the image name to
-# offer the writing tools (the mount must then be writable by uid 10001).
+# The PDFs go in /data (the root folder). Pass `-e PDF_WRITABLE=true` to offer the writing tools
+# (the mount must then be writable by uid 10001).
 
 FROM rust:1.92-slim-bookworm AS build
 WORKDIR /src

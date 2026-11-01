@@ -59,8 +59,8 @@ The repository's `Dockerfile` builds an image that speaks MCP over stdio and car
 ```bash
 docker build -t emperor-pdf .
 docker run -i --rm -v ~/Documents/papers:/data:ro emperor-pdf
-# read-write: mount without :ro and pass the arguments yourself
-docker run -i --rm -v ~/Documents/papers:/data emperor-pdf --root /data --writable
+# read-write: mount without :ro and switch writing on
+docker run -i --rm -e PDF_WRITABLE=true -v ~/Documents/papers:/data emperor-pdf
 ```
 
 The server runs as uid 10001, so for `--writable` the mounted folder must be writable by it.
@@ -108,7 +108,7 @@ emperor-pdf serve --stdio --root ~/Documents/papers
 |------|---------|---------|
 | `--root DIR` | required | The only folder the server can see; tool paths are relative to it. Required even when clients only send `data` or `url`. |
 | `--bind ADDR` | `127.0.0.1:8032` | Listen address for Streamable HTTP. |
-| `--writable` | off | Offer `pdf_pages` and `pdf_create` and allow `pdf_render_page { save_as }`. Without it those two tools are not listed. |
+| `--writable` | off | Offer `pdf_pages` and `pdf_create` and allow `pdf_render_page { save_as }`. Without it those two tools are not listed. Also set by `PDF_WRITABLE`: `true`, `1` or `yes` turn it on; unset, empty, `false`, `0` or `no` leave it off. |
 | `--pdfium-dir DIR` | none | Where to look for PDFium first. |
 | `--stdio` | off | Speak MCP over stdin/stdout instead of HTTP. |
 
@@ -241,7 +241,7 @@ emperor-pdf doctor --root ~/Documents/papers --pdfium-dir ./pdfium --writable
 ```
 
 ```
-emperor-pdf 0.1.1 doctor
+emperor-pdf 0.1.2 doctor
   [ok  ] root folder     /Users/me/Documents/papers (writable)
   [ok  ] pdfium          loaded from ./pdfium/lib/libpdfium.dylib
   [ok  ] typst fonts     6 embedded faces (DejaVu Sans Mono, Libertinus Serif)

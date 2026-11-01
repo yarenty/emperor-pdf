@@ -5,7 +5,8 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use anyhow::Context;
-use clap::{Args, Parser, Subcommand};
+use clap::builder::FalseyValueParser;
+use clap::{ArgAction, Args, Parser, Subcommand};
 use emperor_mcp::{ServeOptions, serve};
 use emperor_pdf::doctor::{self, DoctorOptions};
 use emperor_pdf::root::Root;
@@ -41,8 +42,9 @@ struct Common {
     #[arg(long, default_value = "127.0.0.1:8032")]
     bind: SocketAddr,
     /// Allow pdf_pages, pdf_create and saving rendered pages to write files in the root (without
-    /// it, pdf_pages and pdf_create are not offered at all).
-    #[arg(long)]
+    /// it, pdf_pages and pdf_create are not offered at all). Also read from $PDF_WRITABLE:
+    /// unset, empty, `false`, `0` or `no` mean off.
+    #[arg(long, env = "PDF_WRITABLE", action = ArgAction::SetTrue, value_parser = FalseyValueParser::new())]
     writable: bool,
     /// Folder holding the PDFium library (also searched: $PDFIUM_DYNAMIC_LIB_PATH, the binary's
     /// folder, the system library path).
@@ -84,7 +86,11 @@ async fn run(c: Common) -> anyhow::Result<()> {
             None
         }
     };
-    tracing::info!(root = %root.host_path().display(), writable = c.writable, "serving PDFs");
+    tracing::info!(
+        root = %root.host_path().display(),
+        writing = if c.writable { "on" } else { "off" },
+        "serving PDFs"
+    );
     let config = Arc::new(Config {
         root,
         writable: c.writable,
@@ -114,4 +120,55 @@ fn init_tracing() {
             EnvFilter::try_from_default_env().unwrap_or_else(|_| "info,rmcp=warn".into()),
         )
         .try_init();
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use clap::CommandFactory;
+
+    fn writable_arg() -> clap::Arg {
+        let cmd = Cli::command();
+        let serve = cmd.find_subcommand("serve").unwrap();
+        serve
+            .get_arguments()
+            .find(|a| a.get_id() == "writable")
+            .unwrap()
+            .clone()
+    }
+
+    // The parser `writable` uses; the env wiring itself is covered by tests/cli.rs.
+    fn parse(value: &str) -> bool {
+        use clap::builder::TypedValueParser;
+        let cmd = Cli::command();
+        FalseyValueParser::new()
+            .parse_ref(&cmd, None, std::ffi::OsStr::new(value))
+            .unwrap()
+    }
+
+    #[test]
+    fn writable_reads_pdf_writable() {
+        let arg = writable_arg();
+        assert_eq!(arg.get_env(), Some(std::ffi::OsStr::new("PDF_WRITABLE")));
+    }
+
+    #[test]
+    fn pdf_writable_values() {
+        for off in ["", "false", "False", "0", "no", "off"] {
+            assert!(!parse(off), "{off:?} must mean off");
+        }
+        for on in ["true", "TRUE", "1", "yes"] {
+            assert!(parse(on), "{on:?} must mean on");
+        }
+    }
+
+    #[test]
+    fn writable_flag_without_env_value() {
+        let cli =
+            Cli::try_parse_from(["emperor-pdf", "serve", "--root", ".", "--writable"]).unwrap();
+        let Command::Serve(c) = cli.command else {
+            panic!("serve")
+        };
+        assert!(c.writable);
+    }
 }
