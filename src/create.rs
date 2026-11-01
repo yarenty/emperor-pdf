@@ -30,7 +30,8 @@ pub fn markdown_to_pdf(markdown_text: &str, title: Option<&str>) -> Result<Vec<u
     }
     src.push_str(concat!(
         "#set page(paper: \"a4\", margin: (x: 2.2cm, y: 2.4cm), numbering: \"1\")\n",
-        "#set text(size: 11pt)\n",
+        "#set text(font: \"Libertinus Serif\", size: 11pt)\n",
+        "#show raw: set text(font: \"DejaVu Sans Mono\")\n",
         "#set par(justify: true)\n",
         "#show raw.where(block: true): block.with(fill: luma(245), inset: 8pt, radius: 3pt, width: 100%)\n",
         "#show link: underline\n",

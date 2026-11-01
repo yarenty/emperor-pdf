@@ -1,8 +1,12 @@
 //! The smallest [`typst::World`] that compiles one in-memory source.
 //!
-//! No file system, no packages, no system fonts: the only file is `main.typ`, fonts are the
-//! ones embedded by `typst-assets`, so a PDF looks the same on every machine and a document
-//! cannot read anything from disk.
+//! No file system, no packages, no system fonts: the only file is `main.typ`, and the fonts are
+//! embedded in the binary, so a PDF looks the same on every machine and a document cannot read
+//! anything from disk.
+//!
+//! The embedded fonts are Libertinus Serif (SIL Open Font License 1.1) for text and DejaVu Sans
+//! Mono (Bitstream Vera licence, DejaVu changes public domain) for code, from `assets/fonts/`
+//! with their licence texts. No GPL-licensed font is embedded.
 
 use std::sync::LazyLock;
 
@@ -13,6 +17,16 @@ use typst::text::{Font, FontBook};
 use typst::utils::LazyHash;
 use typst::{Library, LibraryExt, World};
 
+/// The font files embedded in the binary.
+const FONT_FILES: [&[u8]; 6] = [
+    include_bytes!("../assets/fonts/LibertinusSerif-Regular.otf"),
+    include_bytes!("../assets/fonts/LibertinusSerif-Bold.otf"),
+    include_bytes!("../assets/fonts/LibertinusSerif-Italic.otf"),
+    include_bytes!("../assets/fonts/LibertinusSerif-BoldItalic.otf"),
+    include_bytes!("../assets/fonts/DejaVuSansMono.ttf"),
+    include_bytes!("../assets/fonts/DejaVuSansMono-Bold.ttf"),
+];
+
 /// Fonts embedded in the binary, parsed once.
 struct Fonts {
     book: LazyHash<FontBook>,
@@ -20,7 +34,8 @@ struct Fonts {
 }
 
 static FONTS: LazyLock<Fonts> = LazyLock::new(|| {
-    let fonts: Vec<Font> = typst_assets::fonts()
+    let fonts: Vec<Font> = FONT_FILES
+        .into_iter()
         .flat_map(|data| Font::iter(Bytes::new(data)))
         .collect();
     Fonts {
