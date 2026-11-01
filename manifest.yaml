@@ -1,0 +1,56 @@
+name: emperor-pdf
+type: server
+about:
+  title: PDF
+  description: Read, search, render, merge, extract and create PDFs inside one root folder, never outside it.
+meta:
+  category: documents
+  tags: [pdf, documents, search, render, typst, pdfium, sandbox]
+endpoint: http://127.0.0.1:8032/mcp
+topology: local-config
+tools:
+  - name: pdf_info
+    description: Page count, title, author, dates, PDF version, encryption and size of a PDF.
+  - name: pdf_text
+    description: Text of a PDF page by page, with an optional page range and character limit; PDFium when installed, lopdf otherwise.
+  - name: pdf_search
+    description: Search one PDF or a glob of PDFs for text or a regular expression; file, page and snippet per hit.
+  - name: pdf_render_page
+    description: Render one page to PNG (up to 300 dpi) returned as an image, optionally saved. Needs PDFium; saving needs --writable.
+  - name: pdf_pages
+    description: Merge PDFs or extract pages into a new PDF, with page ranges; refuses to overwrite unless asked. Needs --writable.
+  - name: pdf_create
+    description: Create a PDF from Markdown, typeset with Typst and embedded fonts; refuses to overwrite unless asked. Needs --writable.
+config:
+  parameters:
+    type: object
+    required: [root]
+    properties:
+      root:
+        type: string
+        ui:
+          label: Root folder
+          hint: The only folder the server can see (--root).
+      writable:
+        type: boolean
+        default: false
+        ui:
+          label: Allow writes
+          hint: Enables pdf_pages, pdf_create and saving rendered pages (--writable).
+      pdfium_dir:
+        type: string
+        ui:
+          label: PDFium folder
+          hint: Folder with libpdfium (--pdfium-dir); without it text falls back to lopdf and rendering is off.
+      bind:
+        type: string
+        default: 127.0.0.1:8032
+        ui:
+          label: Listen address
+          hint: Streamable HTTP address (--bind).
+test_tool:
+  name: pdf_search
+  args:
+    path: "**/*.pdf"
+    query: the
+    max_hits: 1
