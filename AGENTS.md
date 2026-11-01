@@ -1,6 +1,6 @@
 # emperor-pdf — AI agent notes
 
-**Crate**: `emperor-pdf` · **Version**: 0.1.1 (on emperor-mcp 0.3 from crates.io) · **Licence**: MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`) · **Rust**: 1.92 (`rust-version`; typst 0.15 sets the floor)
+**Crate**: `emperor-pdf` · **Version**: 0.1.2 (on emperor-mcp 0.3 from crates.io) · **Licence**: MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`) · **Rust**: 1.92 (`rust-version`; typst 0.15 sets the floor)
 
 ## Scope
 
@@ -76,7 +76,7 @@ needs the `create` feature), `tests/cli.rs` (the binary: `doctor` exit codes, `s
 - **No GPL/AGPL code dependencies, no single-maintainer PDF crates.** PDF work stays on PDFium,
   lopdf and typst. `cargo deny check` gates licences and advisories (`deny.toml`; every ignore
   carries a reason).
-- **CLI flags are a public contract**: `--root`, `--bind`, `--writable`, `--pdfium-dir`, `--stdio`.
+- **CLI flags are a public contract**: `--root`, `--bind`, `--writable` (also `PDF_WRITABLE`), `--pdfium-dir`, `--stdio`.
 - Logs go to stderr; stdout belongs to the protocol under `--stdio`.
 
 ## Documentation closure (mandatory)

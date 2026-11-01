@@ -3,7 +3,32 @@
 use std::process::Command;
 
 fn bin() -> Command {
-    Command::new(env!("CARGO_BIN_EXE_emperor-pdf"))
+    let mut cmd = Command::new(env!("CARGO_BIN_EXE_emperor-pdf"));
+    cmd.env_remove("PDF_WRITABLE");
+    cmd
+}
+
+fn doctor_with_env(value: &str) -> String {
+    let root = tempfile::tempdir().unwrap();
+    let out = bin()
+        .env("PDF_WRITABLE", value)
+        .args(["doctor", "--stdio", "--root"])
+        .arg(root.path())
+        .output()
+        .unwrap();
+    String::from_utf8_lossy(&out.stdout).into_owned()
+}
+
+#[test]
+fn pdf_writable_switches_writing() {
+    for off in ["", "false", "0", "no"] {
+        let text = doctor_with_env(off);
+        assert!(text.contains("(read-only)"), "{off:?}: {text}");
+    }
+    for on in ["true", "1", "yes"] {
+        let text = doctor_with_env(on);
+        assert!(text.contains("(writable)"), "{on:?}: {text}");
+    }
 }
 
 #[test]

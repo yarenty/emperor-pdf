@@ -3,7 +3,7 @@
   "name": "io.github.yarenty/emperor-pdf",
   "title": "emperor-pdf",
   "description": "Read, search and render the PDFs in one folder; merge, extract and create them from Markdown.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "repository": {
     "url": "https://github.com/yarenty/emperor-pdf",
     "source": "github"
@@ -13,7 +13,7 @@
     {
       "registryType": "cargo",
       "identifier": "emperor-pdf",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "transport": {
         "type": "stdio"
       },
@@ -54,6 +54,16 @@
           "valueHint": "writable",
           "description": "Offer pdf_pages and pdf_create and allow saving rendered pages inside the root folder.",
           "isRequired": false
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "PDF_WRITABLE",
+          "description": "Same as --writable: true, 1 or yes offers pdf_pages and pdf_create and allows saving rendered pages; unset, empty, false, 0 or no keeps the server read-only.",
+          "format": "boolean",
+          "isRequired": false,
+          "isSecret": false,
+          "default": "false"
         }
       ]
     }
