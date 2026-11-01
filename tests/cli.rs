@@ -21,14 +21,28 @@ fn doctor_with_env(value: &str) -> String {
 
 #[test]
 fn pdf_writable_switches_writing() {
-    for off in ["", "false", "0", "no"] {
+    for off in ["", "false", "0", "no", "off"] {
         let text = doctor_with_env(off);
         assert!(text.contains("(read-only)"), "{off:?}: {text}");
     }
-    for on in ["true", "1", "yes"] {
+    for on in ["true", "1", "yes", "on"] {
         let text = doctor_with_env(on);
         assert!(text.contains("(writable)"), "{on:?}: {text}");
     }
+}
+
+#[test]
+fn pdf_writable_refuses_an_unknown_value() {
+    let root = tempfile::tempdir().unwrap();
+    let out = bin()
+        .env("PDF_WRITABLE", "maybe")
+        .args(["doctor", "--stdio", "--root"])
+        .arg(root.path())
+        .output()
+        .unwrap();
+    assert!(!out.status.success());
+    let err = String::from_utf8_lossy(&out.stderr);
+    assert!(err.contains("maybe"), "{err}");
 }
 
 #[test]

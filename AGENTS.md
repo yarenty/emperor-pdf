@@ -1,6 +1,6 @@
 # emperor-pdf — AI agent notes
 
-**Crate**: `emperor-pdf` · **Version**: 0.1.2 (on emperor-mcp 0.3 from crates.io) · **Licence**: MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`) · **Rust**: 1.92 (`rust-version`; typst 0.15 sets the floor)
+**Crate**: `emperor-pdf` · **Version**: 0.1.3 (on emperor-mcp 0.4 from crates.io; Emperor Profile P1.1) · **Licence**: MIT OR Apache-2.0 (`LICENSE-MIT`, `LICENSE-APACHE`) · **Rust**: 1.92 (`rust-version`; typst 0.15 sets the floor)
 
 ## Scope
 
@@ -49,7 +49,8 @@ needs the `create` feature), `tests/cli.rs` (the binary: `doctor` exit codes, `s
 - **Annotations are explicit and accurate**: `read_only_hint` on every tool, `destructive_hint`
   on every tool that writes (true when `overwrite` can replace a file), `idempotent_hint` and
   `open_world_hint` (true for anything that can fetch a `url`). The tool-list tests run
-  `emperor_mcp::testkit::assert_tools_json` against a live `tools/list` in both modes.
+  `emperor_mcp::testkit::assert_tools_json` and `assert_compact_schemas_json` against a live
+  `tools/list` in both modes, and `assert_read_only_default_json` on the read-only one.
 - **Sources**: a reading tool takes exactly one of `path`, `data`, `url` (`Source::pick`); `data`
   and `url` are resolved before `spawn_blocking`, a path is read inside it. URLs go through
   `source::Fetcher` only: HTTPS, public addresses, the emperor-mcp `Limits` byte cap, a timeout.
@@ -76,7 +77,12 @@ needs the `create` feature), `tests/cli.rs` (the binary: `doctor` exit codes, `s
 - **No GPL/AGPL code dependencies, no single-maintainer PDF crates.** PDF work stays on PDFium,
   lopdf and typst. `cargo deny check` gates licences and advisories (`deny.toml`; every ignore
   carries a reason).
-- **CLI flags are a public contract**: `--root`, `--bind`, `--writable` (also `PDF_WRITABLE`), `--pdfium-dir`, `--stdio`.
+- **CLI flags are a public contract**: `--root`, `--bind`, `--writable` (also `PDF_WRITABLE`, read with
+  `emperor_mcp::cli::parse_switch`: an unknown value stops the server), `--pdfium-dir`, `--stdio`.
+- **Lean definitions** (Emperor Profile E12): the router is built with `.compact_schemas()`; a tool
+  description says what the tool does and when to use it rather than another, under 300
+  characters (unit test `default_router_is_read_only_and_lean` fails on a `testkit` warning).
+  Limits, defaults and formats go in the parameter descriptions.
 - Logs go to stderr; stdout belongs to the protocol under `--stdio`.
 
 ## Documentation closure (mandatory)

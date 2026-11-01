@@ -4,6 +4,16 @@ All notable changes to emperor-pdf. The format follows [Keep a Changelog](https:
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-01
+
+> On emperor-mcp 0.4: Emperor Profile P1.1.
+
+### Changed
+- **emperor-mcp 0.4** - the server meets Emperor Profile P1.1: no write tool unless writing is switched on at start-up, and lean tool definitions.
+- **Compact input schemas** - `tools/list` drops the `$schema` URI, the `null` alternative and `"default": null` of optional arguments and Rust integer formats; what the tools accept does not change.
+- **Shorter descriptions** - `pdf_text` and `pdf_search` say what they do and when to use one rather than the other; the `max_chars` and `max_hits` parameters state their upper bounds.
+- **`PDF_WRITABLE`** - also accepts `on` and `off`; any value that is not a known on or off value stops the server at start-up instead of switching writing on.
+
 ## [0.1.2] - 2026-11-01
 
 ### Added

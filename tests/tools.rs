@@ -14,6 +14,7 @@ use serde_json::json;
 async fn listed(base: &str) -> Vec<(String, serde_json::Value)> {
     let list = rpc(base, "tools/list", json!({})).await;
     emperor_mcp::testkit::assert_tools_json(&list);
+    emperor_mcp::testkit::assert_compact_schemas_json(&list);
     let mut tools: Vec<(String, serde_json::Value)> = list["result"]["tools"]
         .as_array()
         .expect("tools")
@@ -33,6 +34,7 @@ async fn listed(base: &str) -> Vec<(String, serde_json::Value)> {
 async fn read_only_server_lists_only_reading_tools() {
     let root = fixture_root();
     let base = start(root.path(), false, Engine::LopdfOnly).await;
+    emperor_mcp::testkit::assert_read_only_default_json(&rpc(&base, "tools/list", json!({})).await);
     let tools = listed(&base).await;
     let names: Vec<&str> = tools.iter().map(|(n, _)| n.as_str()).collect();
     assert_eq!(

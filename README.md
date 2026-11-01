@@ -23,7 +23,11 @@ folder and nowhere else:
 
 Built on the [emperor-mcp](https://github.com/yarenty/emperor-mcp) framework: stateless
 Streamable HTTP (or stdio for desktop clients), framed output, a `doctor` subcommand, four tools
-read-only and six with `--writable`.
+read-only and six with `--writable`. It meets
+[Emperor Profile P1.1](https://github.com/yarenty/emperor-mcp/blob/main/PROFILE.md): no tool
+that writes is listed unless the operator switches writing on at start-up (`--writable` or
+`PDF_WRITABLE`), and tool definitions are lean, with short descriptions that say when to use
+each tool and compact input schemas.
 
 ## Install
 
@@ -108,7 +112,7 @@ emperor-pdf serve --stdio --root ~/Documents/papers
 |------|---------|---------|
 | `--root DIR` | required | The only folder the server can see; tool paths are relative to it. Required even when clients only send `data` or `url`. |
 | `--bind ADDR` | `127.0.0.1:8032` | Listen address for Streamable HTTP. |
-| `--writable` | off | Offer `pdf_pages` and `pdf_create` and allow `pdf_render_page { save_as }`. Without it those two tools are not listed. Also set by `PDF_WRITABLE`: `true`, `1` or `yes` turn it on; unset, empty, `false`, `0` or `no` leave it off. |
+| `--writable` | off | Offer `pdf_pages` and `pdf_create` and allow `pdf_render_page { save_as }`. Without it those two tools are not listed. Also set by `PDF_WRITABLE`: `true`, `1`, `yes` or `on` turn it on; unset, empty, `false`, `0`, `no` or `off` leave it off; any other value stops the server at start-up. |
 | `--pdfium-dir DIR` | none | Where to look for PDFium first. |
 | `--stdio` | off | Speak MCP over stdin/stdout instead of HTTP. |
 
@@ -169,8 +173,8 @@ after 30 seconds and follow at most five redirects.
 | Tool | Arguments | Returns |
 |------|-----------|---------|
 | `pdf_info` | `path` / `data` / `url` | Pages, title, author, subject, keywords, creator, producer, created / modified dates (ISO 8601), PDF version, encrypted, size in bytes. |
-| `pdf_text` | `path` / `data` / `url`, `pages?` (`"1-3,5"`, `"4-"`), `max_chars?` (default 100 000) | Text per page, which extractor ran (`pdfium` or `lopdf`), whether it was truncated, and a hidden-text warning when there is any. |
-| `pdf_search` | `path` (file or glob) / `data` / `url`, `query`, `regex?`, `case_sensitive?`, `max_hits?` (default 50) | File, page, match and a snippet with context for each hit; pages with hidden text are flagged. |
+| `pdf_text` | `path` / `data` / `url`, `pages?` (`"1-3,5"`, `"4-"`), `max_chars?` (default 100 000, at most 2 000 000) | Text per page, which extractor ran (`pdfium` or `lopdf`), whether it was truncated, and a hidden-text warning when there is any. |
+| `pdf_search` | `path` (file or glob) / `data` / `url`, `query`, `regex?`, `case_sensitive?`, `max_hits?` (default 50, at most 500) | File, page, match and a snippet with context for each hit; pages with hidden text are flagged. |
 | `pdf_render_page` | `path` / `data` / `url`, `page`, `dpi?` (1 to 300, default 110), `save_as?`, `overwrite?` | The page as a PNG image (MCP image content), its size, and where it was saved. Needs PDFium; `save_as` needs `--writable`. |
 | `pdf_pages` | `operation` (`merge` or `extract`), `inputs` (`[{path, pages?}]`), `output`, `overwrite?` | A new PDF from the selected pages, in the order written. Only on a `--writable` server. |
 | `pdf_create` | `markdown`, `output`, `title?`, `overwrite?` | A new PDF typeset from Markdown (headings, emphasis, lists, tables, code blocks, quotes, links). Only on a `--writable` server built with the `create` feature. |
@@ -241,7 +245,7 @@ emperor-pdf doctor --root ~/Documents/papers --pdfium-dir ./pdfium --writable
 ```
 
 ```
-emperor-pdf 0.1.2 doctor
+emperor-pdf 0.1.3 doctor
   [ok  ] root folder     /Users/me/Documents/papers (writable)
   [ok  ] pdfium          loaded from ./pdfium/lib/libpdfium.dylib
   [ok  ] typst fonts     6 embedded faces (DejaVu Sans Mono, Libertinus Serif)
