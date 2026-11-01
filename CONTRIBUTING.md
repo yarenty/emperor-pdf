@@ -9,6 +9,7 @@ for a new tool or anything that changes the security model in [README.md](./READ
 scripts/fetch-pdfium.sh   # once, so the PDFium tests run
 cargo fmt --all --check
 cargo clippy --all-targets -- -D warnings
+cargo clippy --all-targets --no-default-features -- -D warnings
 cargo test
 cargo deny check
 ```

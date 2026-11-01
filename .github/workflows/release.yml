@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 # PDFium is not bundled: it is loaded at runtime and installed separately
 # (scripts/fetch-pdfium.sh or https://github.com/bblanchon/pdfium-binaries).
@@ -39,10 +39,10 @@ jobs:
         run: |
           out=target/${{ matrix.target }}/release
           cp LICENSE-MIT LICENSE-APACHE README.md "$out/"
-          # Licences of the fonts embedded in the binary (typst-assets).
-          manifest="$(cargo metadata --format-version 1 | jq -r '.packages[] | select(.name == "typst-assets") | .manifest_path')"
-          assets="$(dirname "$manifest")"
-          cp "$assets/NOTICE" "$out/FONTS-NOTICE"
+          # Licences of the fonts embedded in the binary.
+          cat assets/fonts/LICENSE-OFL-1.1.txt > "$out/FONTS-NOTICE"
+          printf '\n================================================================================\n\n' >> "$out/FONTS-NOTICE"
+          cat assets/fonts/LICENSE-DejaVu.txt >> "$out/FONTS-NOTICE"
       - name: Package (unix)
         if: runner.os != 'Windows'
         run: |
@@ -55,7 +55,37 @@ jobs:
         run: |
           cd target/${{ matrix.target }}/release
           Compress-Archive -Path emperor-pdf.exe,LICENSE-MIT,LICENSE-APACHE,README.md,FONTS-NOTICE -DestinationPath "emperor-pdf-${{ github.ref_name }}-${{ matrix.target }}.zip"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: emperor-pdf-${{ matrix.target }}
+          path: |
+            target/${{ matrix.target }}/release/emperor-pdf-*.tar.gz
+            target/${{ matrix.target }}/release/emperor-pdf-*.zip
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: SHA256SUMS
+        working-directory: dist
+        run: sha256sum emperor-pdf-* > SHA256SUMS && cat SHA256SUMS
+      # Build provenance, checked with `gh attestation verify <archive> --repo yarenty/emperor-pdf`.
+      - uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: |
+            dist/emperor-pdf-*
+            dist/SHA256SUMS
       - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           prerelease: ${{ contains(github.ref_name, '-') }}
@@ -64,6 +94,9 @@ jobs:
             download `pdfium-<os>-<cpu>.tgz` from https://github.com/bblanchon/pdfium-binaries
             (release chromium/7881) and pass `--pdfium-dir`. Without it, text falls back to
             lopdf and page rendering is unavailable.
+
+            Check an archive: `sha256sum -c SHA256SUMS --ignore-missing` and
+            `gh attestation verify <archive> --repo yarenty/emperor-pdf`.
           files: |
-            target/${{ matrix.target }}/release/emperor-pdf-*.tar.gz
-            target/${{ matrix.target }}/release/emperor-pdf-*.zip
+            dist/emperor-pdf-*
+            dist/SHA256SUMS
