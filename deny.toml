@@ -1,0 +1,52 @@
+[graph]
+all-features = true
+
+[advisories]
+version = 2
+db-path = "~/.cargo/advisory-db"
+db-urls = ["https://github.com/rustsec/advisory-db"]
+yanked = "warn"
+ignore = [
+  # All of these arrive through typst 0.15 and have no upgrade path until typst moves.
+  # quick-xml 0.38 is pinned by citationberg (typst bibliographies). emperor-pdf never emits
+  # bibliography() and its typst World serves no file but main.typ, so no XML from users is parsed.
+  { id = "RUSTSEC-2026-0194", reason = "quick-xml via typst bibliographies; never reached, see above" },
+  { id = "RUSTSEC-2026-0195", reason = "quick-xml via typst bibliographies; never reached, see above" },
+  # Unmaintained, no fixed release: font shaping/parsing (typst-layout, krilla), syntax
+  # highlighting (syntect), bibliography formats (hayagriva).
+  { id = "RUSTSEC-2026-0206", reason = "rustybuzz: typst text shaping, no maintained successor yet" },
+  { id = "RUSTSEC-2026-0192", reason = "ttf-parser: typst font parsing, only embedded fonts are loaded" },
+  { id = "RUSTSEC-2025-0141", reason = "bincode 1.3.3 via syntect; considered complete by its authors" },
+  { id = "RUSTSEC-2024-0320", reason = "yaml-rust via syntect; not fed user input" },
+  { id = "RUSTSEC-2024-0449", reason = "unsafe-libyaml via hayagriva serde_yaml; bibliographies unused" },
+  { id = "RUSTSEC-2024-0436", reason = "paste: proc-macro used at build time only" },
+]
+
+[licenses]
+version = 2
+allow = [
+  "MIT",
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "BSL-1.0",
+  "ISC",
+  "Unicode-3.0",
+  "Zlib",
+  # typst-assets declares Apache-2.0 for the crate; the embedded fonts themselves are under the
+  # SIL Open Font License and similar, with their licence texts shipped inside typst-assets.
+  "CC0-1.0",
+]
+confidence-threshold = 0.8
+
+[bans]
+multiple-versions = "warn"
+wildcards = "allow"
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+# emperor-mcp 0.2 is not on crates.io yet; drop this once Cargo.toml uses version = "0.2".
+allow-git = ["https://github.com/yarenty/emperor-mcp"]

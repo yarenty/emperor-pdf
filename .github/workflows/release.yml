@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# PDFium is not bundled: it is loaded at runtime and installed separately
+# (scripts/fetch-pdfium.sh or https://github.com/bblanchon/pdfium-binaries).
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          # Intel-mac runners (macos-13) are retired; cross-compile on Apple Silicon.
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --release --target ${{ matrix.target }}
+      - name: Collect licences
+        shell: bash
+        run: |
+          out=target/${{ matrix.target }}/release
+          cp LICENSE-MIT LICENSE-APACHE README.md "$out/"
+          # Licences of the fonts embedded in the binary (typst-assets).
+          manifest="$(cargo metadata --format-version 1 | jq -r '.packages[] | select(.name == "typst-assets") | .manifest_path')"
+          assets="$(dirname "$manifest")"
+          cp "$assets/NOTICE" "$out/FONTS-NOTICE"
+      - name: Package (unix)
+        if: runner.os != 'Windows'
+        run: |
+          cd target/${{ matrix.target }}/release
+          tar czf emperor-pdf-${{ github.ref_name }}-${{ matrix.target }}.tar.gz \
+            emperor-pdf LICENSE-MIT LICENSE-APACHE README.md FONTS-NOTICE
+      - name: Package (windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cd target/${{ matrix.target }}/release
+          Compress-Archive -Path emperor-pdf.exe,LICENSE-MIT,LICENSE-APACHE,README.md,FONTS-NOTICE -DestinationPath "emperor-pdf-${{ github.ref_name }}-${{ matrix.target }}.zip"
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          body: |
+            PDFium is not included. Install it with `scripts/fetch-pdfium.sh` from a checkout, or
+            download `pdfium-<os>-<cpu>.tgz` from https://github.com/bblanchon/pdfium-binaries
+            (release chromium/7881) and pass `--pdfium-dir`. Without it, text falls back to
+            lopdf and page rendering is unavailable.
+          files: |
+            target/${{ matrix.target }}/release/emperor-pdf-*.tar.gz
+            target/${{ matrix.target }}/release/emperor-pdf-*.zip
