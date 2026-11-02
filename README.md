@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/yarenty/emperor-pdf/actions/workflows/ci.yml/badge.svg)](https://github.com/yarenty/emperor-pdf/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#license)
+[![Glama](https://glama.ai/mcp/servers/yarenty/emperor-pdf/badges/score.svg)](https://glama.ai/mcp/servers/yarenty/emperor-pdf)
 
 **The PDFs in one folder, for your agents: read, search, render, merge, split and write them.**
 
